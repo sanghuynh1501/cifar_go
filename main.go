@@ -18,7 +18,8 @@ import (
 	"gorgonia.org/tensor"
 
 	// "cifar_cnn/cifar"
-	"cifar_cnn/cifar"
+	"cifar_go/cifar"
+	"cifar_go/weight"
 )
 
 var (
@@ -61,13 +62,18 @@ type convnet struct {
 	predVal gorgonia.Value
 }
 
-func newConvNet(g *gorgonia.ExprGraph) *convnet {
-	w0 := gorgonia.NewTensor(g, dt, 4, gorgonia.WithShape(32, 3, 3, 3), gorgonia.WithName("w0"), gorgonia.WithInit(gorgonia.GlorotN(1.0)))
-	w1 := gorgonia.NewTensor(g, dt, 4, gorgonia.WithShape(32, 32, 3, 3), gorgonia.WithName("w1"), gorgonia.WithInit(gorgonia.GlorotN(1.0)))
-	w2 := gorgonia.NewTensor(g, dt, 4, gorgonia.WithShape(64, 32, 3, 3), gorgonia.WithName("w2"), gorgonia.WithInit(gorgonia.GlorotN(1.0)))
-	w3 := gorgonia.NewTensor(g, dt, 4, gorgonia.WithShape(64, 64, 3, 3), gorgonia.WithName("w3"), gorgonia.WithInit(gorgonia.GlorotN(1.0)))
-	w4 := gorgonia.NewMatrix(g, dt, gorgonia.WithShape(1600, 512), gorgonia.WithName("w4"), gorgonia.WithInit(gorgonia.GlorotN(1.0)))
-	w5 := gorgonia.NewMatrix(g, dt, gorgonia.WithShape(512, 10), gorgonia.WithName("w5"), gorgonia.WithInit(gorgonia.GlorotN(1.0)))
+func array_inintial(shape tensor.ConsOpt, input []float64) gorgonia.NodeConsOpt {
+	image := tensor.New(shape, tensor.WithBacking(input))
+	return gorgonia.WithValue(image)
+}
+
+func newConvNet(g *gorgonia.ExprGraph, w0_array []float64, w1_array []float64, w2_array []float64, w3_array []float64, w4_array []float64, w5_array []float64) *convnet {
+	w0 := gorgonia.NewTensor(g, dt, 4, gorgonia.WithShape(32, 3, 3, 3), gorgonia.WithName("w0"), array_inintial(tensor.WithShape(32, 3, 3, 3), w0_array))
+	w1 := gorgonia.NewTensor(g, dt, 4, gorgonia.WithShape(32, 32, 3, 3), gorgonia.WithName("w1"), array_inintial(tensor.WithShape(32, 32, 3, 3), w1_array))
+	w2 := gorgonia.NewTensor(g, dt, 4, gorgonia.WithShape(64, 32, 3, 3), gorgonia.WithName("w2"), array_inintial(tensor.WithShape(64, 32, 3, 3), w2_array))
+	w3 := gorgonia.NewTensor(g, dt, 4, gorgonia.WithShape(64, 64, 3, 3), gorgonia.WithName("w3"), array_inintial(tensor.WithShape(64, 64, 3, 3), w3_array))
+	w4 := gorgonia.NewMatrix(g, dt, gorgonia.WithShape(1600, 512), gorgonia.WithName("w4"), array_inintial(tensor.WithShape(1600, 512), w4_array))
+	w5 := gorgonia.NewMatrix(g, dt, gorgonia.WithShape(512, 10), gorgonia.WithName("w5"), array_inintial(tensor.WithShape(512, 10), w5_array))
 	return &convnet{
 		g:  g,
 		w0: w0,
@@ -216,7 +222,9 @@ func main() {
 	g := gorgonia.NewGraph()
 	x := gorgonia.NewTensor(g, dt, 4, gorgonia.WithShape(bs, 3, 32, 32), gorgonia.WithName("x"))
 	// y := gorgonia.NewMatrix(g, dt, gorgonia.WithShape(bs, 10), gorgonia.WithName("y"))
-	m := newConvNet(g)
+
+	w0, w1, w2, w3, w4, w5 := weight.Load()
+	m := newConvNet(g, w0, w1, w2, w3, w4, w5)
 	if err = m.fwd(x); err != nil {
 		log.Fatalf("%+v", err)
 	}
