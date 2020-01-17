@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 )
@@ -14,19 +15,24 @@ type Layer struct {
 }
 
 type Weight struct {
-	Layer_0 Layer
-	Layer_1 Layer
-	Layer_2 Layer
-	Layer_3 Layer
-	Layer_4 Layer
-	Layer_5 Layer
+	Weight Layer
+	Bias   Layer
+}
+
+type Weights struct {
+	Layer_0 Weight
+	Layer_1 Weight
+	Layer_2 Weight
+	Layer_3 Weight
+	Layer_4 Weight
+	Layer_5 Weight
 }
 
 type Data struct {
-	Weights Weight
+	Weights Weights
 }
 
-func Load() ([]float64, []float64, []float64, []float64, []float64, []float64) {
+func Load() ([]float64, []float64, []float64, []float64, []float64, []float64, []float64, []float64, []float64, []float64, []float64, []float64) {
 	// Open our jsonFile
 	jsonFile, err := os.Open(filepath.Join("weight", "weights.json"))
 	// if we os.Open returns an error then handle it
@@ -41,6 +47,12 @@ func Load() ([]float64, []float64, []float64, []float64, []float64, []float64) {
 
 	var data Data
 	json.Unmarshal([]byte(byteValue), &data)
+	log.Print(data.Weights.Layer_0.Bias.Shape)
 
-	return data.Weights.Layer_0.Value, data.Weights.Layer_1.Value, data.Weights.Layer_2.Value, data.Weights.Layer_3.Value, data.Weights.Layer_4.Value, data.Weights.Layer_5.Value
+	return data.Weights.Layer_0.Weight.Value, data.Weights.Layer_0.Bias.Value,
+		data.Weights.Layer_1.Weight.Value, data.Weights.Layer_1.Bias.Value,
+		data.Weights.Layer_2.Weight.Value, data.Weights.Layer_2.Bias.Value,
+		data.Weights.Layer_3.Weight.Value, data.Weights.Layer_3.Bias.Value,
+		data.Weights.Layer_4.Weight.Value, data.Weights.Layer_4.Bias.Value,
+		data.Weights.Layer_5.Weight.Value, data.Weights.Layer_5.Bias.Value
 }

@@ -14,10 +14,7 @@ const numLabels = 10
 const pixelRange = 255
 
 func pixelWeight(px byte) float64 {
-	retVal := float64(px)/pixelRange*0.9 + 0.1
-	if retVal == 1.0 {
-		return 0.999
-	}
+	retVal := (float64(px)/255 - 0.5) * 2
 	return retVal
 }
 
