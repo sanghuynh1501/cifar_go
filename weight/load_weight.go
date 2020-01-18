@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
-	"path/filepath"
+
+	"github.com/utahta/go-openuri"
 )
 
 type Layer struct {
@@ -34,8 +34,10 @@ type Data struct {
 
 func Load() ([]float64, []float64, []float64, []float64, []float64, []float64, []float64, []float64, []float64, []float64, []float64, []float64) {
 	// Open our jsonFile
-	jsonFile, err := os.Open(filepath.Join("weight", "weights.json"))
+	// jsonFile, err := os.Open(filepath.Join("weight", "weights.json"))
 	// if we os.Open returns an error then handle it
+	jsonFile, err := openuri.Open("http://localhost:3000/weights.json")
+
 	if err != nil {
 		fmt.Println(err)
 	}

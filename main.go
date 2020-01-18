@@ -323,26 +323,28 @@ func main() {
 	}
 	mv := gorgonia.NewTapeMachine(g)
 	mv.RunAll()
-	arrayOutput := m.predVal.Data().([]float64)
-	yOutput := tensor.New(tensor.WithShape(bs, 10), tensor.WithBacking(arrayOutput))
-	for i := 0; i < yOutput.Shape()[0]; i++ {
-		predRowT, _ := yOutput.Slice(sli{i, i + 1})
-		predRow := predRowT.Data().([]float64)
-		var rowGuess int
-		var predRowHigh float64
+	log.Println("m.out ", m.out.Value().Data().([]float64))
 
-		// guess result
-		for k := 0; k < bs; k++ {
-			if k == 0 {
-				rowGuess = 0
-				predRowHigh = predRow[k]
-			} else if predRow[k] > predRowHigh {
-				rowGuess = k
-				predRowHigh = predRow[k]
-			}
-		}
-		log.Println("rowGuess ", rowGuess)
-	}
+	// arrayOutput := m.predVal.Data().([]float64)
+	// yOutput := tensor.New(tensor.WithShape(bs, 10), tensor.WithBacking(arrayOutput))
+	// for i := 0; i < yOutput.Shape()[0]; i++ {
+	// 	predRowT, _ := yOutput.Slice(sli{i, i + 1})
+	// 	predRow := predRowT.Data().([]float64)
+	// 	var rowGuess int
+	// 	var predRowHigh float64
+
+	// 	// guess result
+	// 	for k := 0; k < bs; k++ {
+	// 		if k == 0 {
+	// 			rowGuess = 0
+	// 			predRowHigh = predRow[k]
+	// 		} else if predRow[k] > predRowHigh {
+	// 			rowGuess = k
+	// 			predRowHigh = predRow[k]
+	// 		}
+	// 	}
+	// 	log.Println("rowGuess ", rowGuess)
+	// }
 
 	// // prog, locMap, _ := gorgonia.Compile(g)
 	// vm := gorgonia.NewTapeMachine(g)

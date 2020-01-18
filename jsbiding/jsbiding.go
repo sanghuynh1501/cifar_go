@@ -37,9 +37,9 @@ func GetImage() ([]float64, []float64) {
 	var image_1d []float64
 	for i := 0; i < 32; i++ {
 		for j := 0; j < 32; j++ {
-			image_1d = append(image_1d, 0.5)
-			image_1d = append(image_1d, 0.5)
-			image_1d = append(image_1d, 0.5)
+			image_1d = append(image_1d, 0.9)
+			image_1d = append(image_1d, 0.9)
+			image_1d = append(image_1d, 0.9)
 		}
 	}
 
