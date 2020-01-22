@@ -1,47 +1,57 @@
 package jsbiding
 
 import (
+	"bytes"
+	"encoding/base64"
 	"image"
+	"image/jpeg"
+	"image/png"
+	"log"
+	"strings"
+	"syscall/js"
 	// "syscall/js"
 )
 
 func GetImage() ([]float64, []float64) {
-	// doc := js.Global().Get("document")
-	// image_element := doc.Call("getElementById", "predict_image")
-	// image_base64 := image_element.Get("src")
-	// coI := strings.Index(image_base64.String(), ",")
-	// raw_image := image_base64.String()[coI+1:]
+	doc := js.Global().Get("document")
+	image_element := doc.Call("getElementById", "predict_image")
+	image_base64 := image_element.Get("src")
+	coI := strings.Index(image_base64.String(), ",")
+	raw_image := image_base64.String()[coI+1:]
 
-	// unbased, _ := base64.StdEncoding.DecodeString(string(raw_image))
-	// res := bytes.NewReader(unbased)
+	unbased, _ := base64.StdEncoding.DecodeString(string(raw_image))
+	res := bytes.NewReader(unbased)
 
-	// var rs_image image.Image
-	// switch strings.TrimSuffix(image_base64.String()[5:coI], ";base64") {
-	// case "image/png":
-	// 	log.Println("image/png")
-	// 	pngI, err := png.Decode(res)
-	// 	if err != nil {
-	// 		log.Printf("err ", err)
-	// 	}
-	// 	rs_image = resize.Resize(32, 32, pngI, resize.Bilinear)
-	// case "image/jpeg":
-	// 	log.Println("image/jpeg")
-	// 	jpgI, err := jpeg.Decode(res)
-	// 	if err != nil {
-	// 		log.Printf("err ", err)
-	// 	}
-	// 	rs_image = resize.Resize(32, 32, jpgI, resize.Bilinear)
-	// }
-	// log.Println(rs_image.Bounds())
-	// image_array, _ := getPixels(rs_image)
+	var rs_image image.Image
+	switch strings.TrimSuffix(image_base64.String()[5:coI], ";base64") {
+	case "image/png":
+		log.Println("image/png")
+		pngI, err := png.Decode(res)
+		if err != nil {
+			log.Printf("err ", err)
+		}
+		rs_image = pngI
+		// rs_image = resize.Resize(32, 32, pngI, resize.Bilinear)
+	case "image/jpeg":
+		log.Println("image/jpeg")
+		jpgI, err := jpeg.Decode(res)
+		if err != nil {
+			log.Printf("err ", err)
+		}
+		rs_image = jpgI
+		// rs_image = resize.Resize(32, 32, jpgI, resize.Bilinear)
+	}
+	log.Println(rs_image.Bounds())
+	image_array, _ := getPixels(rs_image)
 	var image_1d []float64
 	for i := 0; i < 32; i++ {
 		for j := 0; j < 32; j++ {
-			image_1d = append(image_1d, 0.9)
-			image_1d = append(image_1d, 0.9)
-			image_1d = append(image_1d, 0.9)
+			image_1d = append(image_1d, float64(image_array[i][j].R)/255)
+			image_1d = append(image_1d, float64(image_array[i][j].G)/255)
+			image_1d = append(image_1d, float64(image_array[i][j].B)/255)
 		}
 	}
+	log.Println(image_1d)
 
 	return image_1d, image_1d
 }
