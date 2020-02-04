@@ -1,15 +1,16 @@
 package weight
 
 import (
-	"encoding/json"
+	"encoding/gob"
 	"fmt"
-	"io/ioutil"
+	"log"
+	"os"
 
 	"github.com/utahta/go-openuri"
 )
 
 type Weight struct {
-	Shape []int32
+	Shape []uint32
 	Value []float64
 }
 
@@ -18,18 +19,18 @@ type Data struct {
 }
 
 func Load() []Weight {
-	jsonFile, err := openuri.Open("http://localhost:3000/weights.json")
-
-	if err != nil {
-		fmt.Println(err)
+	dataFile, err_file_out := openuri.Open("http://localhost:3000/integerdata.gob")
+	if err_file_out != nil {
+		fmt.Println(err_file_out)
+		os.Exit(1)
 	}
-	fmt.Println("Successfully Opened users.json")
-	defer jsonFile.Close()
+	dec := gob.NewDecoder(dataFile)
+	var m Data
+	err := dec.Decode(&m)
+	if err != nil {
+		log.Fatal("decode error:", err)
+	}
+	dataFile.Close()
 
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-
-	var data Data
-	json.Unmarshal([]byte(byteValue), &data)
-
-	return data.Weights
+	return m.Weights
 }

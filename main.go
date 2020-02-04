@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"strconv"
+	"syscall/js"
 
 	_ "net/http/pprof"
 
@@ -171,18 +172,17 @@ func main() {
 	// w4_object := weights{w4, b4}
 	// w5_object := weights{w5, b5}
 
-	VGG19 := []int{64, 64, -1, 128, 128, -1, 256, 256, 256, -1, 512, 512, 512, -1, 512, 512, 512}
+	VGG19 := []int{64, -1, 128, -1, 256, 256, -1, 512, 512, -1, 512, 512}
 	m := newConvNet(g, bs, VGG19, weights_array)
 
 	if err = m.fwd(xValue, VGG19); err != nil {
 		log.Fatalf("%+v", err)
 	}
-	mv := gorgonia.NewLispMachine(g)
+	mv := gorgonia.NewTapeMachine(g)
 	defer mv.Close()
 	if err = mv.RunAll(); err != nil {
 		log.Fatal(err)
 	}
-	mv.RunAll()
 	predict_array := m.out.Value().Data().([]float64)[:10]
 	max := predict_array[0]
 	label := 0
@@ -194,4 +194,7 @@ func main() {
 	}
 	log.Println(m.out.Value().Data().([]float64)[:10])
 	log.Println("label ", labels[label])
+	doc := js.Global().Get("document")
+	label_dom := doc.Call("getElementById", "predict_label")
+	label_dom.Set("innerHTML", labels[label])
 }
