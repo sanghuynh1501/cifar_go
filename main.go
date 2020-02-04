@@ -8,21 +8,19 @@ import (
 	"math/rand"
 	"strconv"
 	"syscall/js"
+	"time"
 
 	_ "net/http/pprof"
 
 	"github.com/pkg/errors"
 	"gorgonia.org/gorgonia"
 	"gorgonia.org/tensor"
-	// "cifar_cnn/cifar"
 )
 
 var (
 	dtype     = flag.String("dtype", "float64", "Which dtype to use")
 	batchsize = flag.Int("batchsize", 100, "Batch size")
 )
-
-const loc = "./cifar-10/"
 
 var dt tensor.Dtype
 
@@ -57,8 +55,6 @@ func newConvNet(g *gorgonia.ExprGraph, bs int, config []int, weights_array []wei
 	for i, x := range config {
 		if x != -1 {
 			w := gorgonia.NewTensor(g, dt, 4, gorgonia.WithShape(x, in_channels, 3, 3), gorgonia.WithName("w"+strconv.FormatInt(int64(i), 10)), array_inintial(tensor.WithShape(x, in_channels, 3, 3), weights_array[index].Value))
-			// weight := gorgonia.NewTensor(g, dt, 4, gorgonia.WithShape(x, in_channels, 3, 3), gorgonia.WithName("w"+strconv.FormatInt(int64(i), 10)), gorgonia.WithInit(gorgonia.GlorotN(1.0)))
-			println(x, in_channels)
 			weights = append(weights, w)
 			in_channels = x
 			index += 1
@@ -78,35 +74,13 @@ func newConvNet(g *gorgonia.ExprGraph, bs int, config []int, weights_array []wei
 	}
 }
 
-func (m *convnet) learnables() gorgonia.Nodes {
-	return gorgonia.Nodes{
-		m.weights[0],
-		m.weights[1],
-		m.weights[2],
-		m.weights[3],
-		m.weights[4],
-		m.weights[5],
-		m.weights[6],
-		m.weights[7],
-		m.weights[8],
-		m.weights[9],
-		m.weights[10],
-		m.weights[11],
-		m.weights[12],
-		m.weights[13],
-		m.weights[14],
-		m.weights[15],
-	}
-}
-
 // This function is particularly verbose for educational reasons. In reality, you'd wrap up the layers within a layer struct type and perform per-layer activations
 func (m *convnet) fwd(x *gorgonia.Node, config []int) (err error) {
 	var out *gorgonia.Node
 
 	index := 0
-	for idx, layer := range config {
+	for _, layer := range config {
 		if layer != -1 {
-			log.Println("m.weights[index] ", m.weights[index].Value().Data().([]float64)[:10])
 			if x, err = gorgonia.Conv2d(x, m.weights[index], tensor.Shape{3, 3}, []int{1, 1}, []int{1, 1}, []int{1, 1}); err != nil {
 				return errors.Wrap(err, "Layer 0 Convolution failed")
 			}
@@ -116,18 +90,14 @@ func (m *convnet) fwd(x *gorgonia.Node, config []int) (err error) {
 			if x, err = gorgonia.Rectify(x); err != nil {
 				return errors.Wrap(err, "Layer 0 activation failed")
 			}
-			log.Println("Layer "+strconv.FormatInt(int64(idx), 10)+" shape: ", x.Shape())
 			index += 1
 		} else {
-			log.Println("x.Shape ", x.Shape())
 			if x, err = gorgonia.MaxPool2D(x, tensor.Shape{2, 2}, []int{0, 0}, []int{2, 2}); err != nil {
 				return errors.Wrap(err, "Layer 1 Maxpooling failed")
 			}
 		}
 	}
 	b, c, h, w := x.Shape()[0], x.Shape()[1], x.Shape()[2], x.Shape()[3]
-
-	log.Println("INDEX, INDEX ", index)
 
 	if out, err = gorgonia.Reshape(x, tensor.Shape{b, c * h * w}); err != nil {
 		return errors.Wrap(err, "Unable to reshape layer 3")
@@ -143,12 +113,12 @@ func (m *convnet) fwd(x *gorgonia.Node, config []int) (err error) {
 
 	m.out = out
 	gorgonia.Read(m.out, &m.predVal)
-	log.Printf("layer 5 shape %v", out.Shape())
 
 	return
 }
 
 func main() {
+	start := time.Now()
 	flag.Parse()
 	parseDtype()
 	rand.Seed(1337)
@@ -165,12 +135,6 @@ func main() {
 	xValue1, err = gorgonia.Reshape(xValue1, tensor.Shape{1, 3, 32, 32})
 	xValue2, err = gorgonia.Reshape(xValue2, tensor.Shape{1, 3, 32, 32})
 	xValue, err := gorgonia.Concat(0, xValue1, xValue2)
-	// w0_object := weights{w0, b0}
-	// w1_object := weights{w1, b1}
-	// w2_object := weights{w2, b2}
-	// w3_object := weights{w3, b3}
-	// w4_object := weights{w4, b4}
-	// w5_object := weights{w5, b5}
 
 	VGG19 := []int{64, -1, 128, -1, 256, 256, -1, 512, 512, -1, 512, 512}
 	m := newConvNet(g, bs, VGG19, weights_array)
@@ -192,9 +156,10 @@ func main() {
 			label = i
 		}
 	}
-	log.Println(m.out.Value().Data().([]float64)[:10])
 	log.Println("label ", labels[label])
 	doc := js.Global().Get("document")
 	label_dom := doc.Call("getElementById", "predict_label")
 	label_dom.Set("innerHTML", labels[label])
+	elapsed := time.Since(start)
+	log.Printf("Time took %s", elapsed)
 }

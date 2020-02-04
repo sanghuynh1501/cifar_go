@@ -25,7 +25,6 @@ func GetImage() ([]float64, []float64) {
 	var rs_image image.Image
 	switch strings.TrimSuffix(image_base64.String()[5:coI], ";base64") {
 	case "image/png":
-		log.Println("image/png")
 		pngI, err := png.Decode(res)
 		if err != nil {
 			log.Printf("err ", err)
@@ -33,7 +32,6 @@ func GetImage() ([]float64, []float64) {
 		rs_image = pngI
 		// rs_image = resize.Resize(32, 32, pngI, resize.Bilinear)
 	case "image/jpeg":
-		log.Println("image/jpeg")
 		jpgI, err := jpeg.Decode(res)
 		if err != nil {
 			log.Printf("err ", err)
@@ -41,7 +39,6 @@ func GetImage() ([]float64, []float64) {
 		rs_image = jpgI
 		// rs_image = resize.Resize(32, 32, jpgI, resize.Bilinear)
 	}
-	log.Println(rs_image.Bounds())
 	image_array, _ := getPixels(rs_image)
 	var image_1d []float64
 	for i := 0; i < 32; i++ {
@@ -51,8 +48,6 @@ func GetImage() ([]float64, []float64) {
 			image_1d = append(image_1d, float64(image_array[i][j].B)/255)
 		}
 	}
-	log.Println(image_1d)
-
 	return image_1d, image_1d
 }
 
