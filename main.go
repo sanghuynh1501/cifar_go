@@ -129,6 +129,8 @@ func main() {
 	bs := 2
 	var err error
 	weights_array := weight.Load()
+	elapsed := time.Since(start)
+	log.Printf("Time took %s", elapsed)
 	image1, image2 := jsbiding.GetImage()
 	xValue1 := gorgonia.NewMatrix(g, dt, gorgonia.WithShape(1, 3*32*32), gorgonia.WithName("xValue1"), array_inintial(tensor.WithShape(1, 3*32*32), image1))
 	xValue2 := gorgonia.NewMatrix(g, dt, gorgonia.WithShape(1, 3*32*32), gorgonia.WithName("xValue2"), array_inintial(tensor.WithShape(1, 3*32*32), image2))
@@ -160,6 +162,6 @@ func main() {
 	doc := js.Global().Get("document")
 	label_dom := doc.Call("getElementById", "predict_label")
 	label_dom.Set("innerHTML", labels[label])
-	elapsed := time.Since(start)
+	elapsed = time.Since(start)
 	log.Printf("Time took %s", elapsed)
 }
