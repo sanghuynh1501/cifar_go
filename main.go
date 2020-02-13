@@ -84,9 +84,6 @@ func (m *convnet) fwd(x *gorgonia.Node, config []int) (err error) {
 			if x, err = gorgonia.Conv2d(x, m.weights[index], tensor.Shape{3, 3}, []int{1, 1}, []int{1, 1}, []int{1, 1}); err != nil {
 				return errors.Wrap(err, "Layer 0 Convolution failed")
 			}
-			// if x, _, _, _, err = gorgonia.BatchNorm(x, nil, nil, 0.1, 0.0001); err != nil {
-			// 	return errors.Wrap(err, "Layer 0 Convolution failed")
-			// }
 			if x, err = gorgonia.Rectify(x); err != nil {
 				return errors.Wrap(err, "Layer 0 activation failed")
 			}
@@ -138,10 +135,10 @@ func main() {
 	xValue2, err = gorgonia.Reshape(xValue2, tensor.Shape{1, 3, 32, 32})
 	xValue, err := gorgonia.Concat(0, xValue1, xValue2)
 
-	VGG19 := []int{64, -1, 128, -1, 256, 256, -1, 512, 512, -1, 512, 512}
-	m := newConvNet(g, bs, VGG19, weights_array)
+	VGG13 := []int{64, 64, -1, 128, 128, -1, 256, 256, -1, 512, 512, -1, 512, 512}
+	m := newConvNet(g, bs, VGG13, weights_array)
 
-	if err = m.fwd(xValue, VGG19); err != nil {
+	if err = m.fwd(xValue, VGG13); err != nil {
 		log.Fatalf("%+v", err)
 	}
 	mv := gorgonia.NewTapeMachine(g)

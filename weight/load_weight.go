@@ -19,7 +19,7 @@ type Data struct {
 }
 
 func Load() []Weight {
-	dataFile, err_file_out := openuri.Open("http://localhost:3000/integerdata.gob")
+	dataFile, err_file_out := openuri.Open("http://localhost:3000/weights.gob")
 	if err_file_out != nil {
 		fmt.Println(err_file_out)
 		os.Exit(1)
@@ -31,6 +31,5 @@ func Load() []Weight {
 		log.Fatal("decode error:", err)
 	}
 	dataFile.Close()
-
 	return m.Weights
 }
